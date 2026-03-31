@@ -6,151 +6,332 @@
 <title>Geographies of Wealth – Vocab Web</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
-  .card { background: #fff; border-radius: 16px; padding: 28px 24px 20px; max-width: 700px; width: 100%; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
-  .header { background: #3C3489; border-radius: 12px; padding: 22px 28px; margin-bottom: 24px; }
-  .eyebrow { font-size: 11px; letter-spacing: 2px; color: #AFA9EC; text-transform: uppercase; margin-bottom: 6px; }
-  h1 { font-size: 24px; font-weight: 500; color: #fff; margin-bottom: 8px; }
-  .subtitle { color: #CECBF6; font-size: 13px; }
-  .grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-  .pill { padding: 10px 16px; border-radius: 20px; cursor: pointer; transition: all 0.15s; border-width: 1.5px; border-style: solid; }
-  .pill .plabel { font-weight: 500; font-size: 14px; }
-  .pill .ptag { font-size: 11px; margin-top: 2px; opacity: 0.7; }
-  .pill.active .ptag { opacity: 0.75; }
-  .pill.dimmed { opacity: 0.3; }
-  .pill.active { transform: scale(1.05); }
-  .detail { border-width: 1.5px; border-style: solid; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; }
-  .detail h2 { font-size: 17px; font-weight: 500; margin-bottom: 8px; }
-  .detail p { font-size: 14px; line-height: 1.7; margin-bottom: 14px; }
-  .detail .conn-label { font-size: 12px; font-weight: 500; }
-  .conn-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .conn-tag { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; cursor: pointer; border-width: 1px; border-style: solid; }
-  .hint { font-size: 13px; color: #888; text-align: center; padding: 12px 0; }
-  .footer { margin-top: 16px; font-size: 11px; color: #aaa; text-align: center; }
+  body { font-family: system-ui, sans-serif; background: #1e1c2e; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  h1 { color: #CECBF6; font-size: 15px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; text-align: center; }
+  .sub { color: #6e6a8a; font-size: 12px; margin-bottom: 16px; text-align: center; }
+  #canvas-wrap { position: relative; width: 100%; max-width: 780px; }
+  canvas { display: block; width: 100%; }
+  .tooltip {
+    position: absolute; pointer-events: none;
+    background: #fff; border-radius: 12px;
+    padding: 14px 16px; max-width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    font-size: 13px; line-height: 1.6; color: #1a1a18;
+    opacity: 0; transition: opacity 0.15s;
+    border-top: 3px solid #7F77DD;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip strong { display: block; font-size: 15px; margin-bottom: 4px; }
+  .tooltip .tag { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .hint { color: #4e4a6a; font-size: 12px; margin-top: 12px; text-align: center; }
 </style>
 </head>
 <body>
-<div class="card">
 
-  <div class="header">
-    <div class="eyebrow">SSC Module</div>
-    <h1>Geographies of Wealth</h1>
-    <p class="subtitle">Tap any term to see its definition and connections.</p>
-  </div>
+<h1>Geographies of Wealth</h1>
+<p class="sub">PhillyBOLT · SSC Module · Vocabulary Web</p>
 
-  <div class="grid" id="grid"></div>
-  <div id="detail"></div>
-  <div class="hint" id="hint">Select a term above to explore it</div>
-  <div class="footer">PhillyBOLT · SSC Module · Geographies of Wealth</div>
-
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+  <div class="tooltip" id="tip"></div>
 </div>
+<p class="hint">Hover or tap any term to explore its definition and connections</p>
 
 <script>
-const nodes = [
+const NODES = [
   {
-    id:"wealth", label:"Wealth", tagline:"Assets minus liabilities",
-    detail:"What you own minus what you owe. Unlike income, wealth accumulates over time and can be passed down — or blocked from building at all.",
-    connections:["income","assets","redlining","disinvestment","equity","geography"],
-    bg:"#EEEDFE", border:"#7F77DD", text:"#26215C", active:"#3C3489"
+    id:"wealth", label:"Wealth", tag:"Central concept",
+    def:"What you own minus what you owe. Unlike income, wealth accumulates over time and can be passed down — or blocked from building at all.",
+    connects:["income","assets","redlining","disinvestment","equity","geography"],
+    color:"#7F77DD", glow:"#3C3489"
   },
   {
-    id:"income", label:"Income", tagline:"Money that flows in",
-    detail:"Wages, benefits, rent received. Income is a stream — it can build wealth, but only if there are structures to catch and hold it.",
-    connections:["wealth","assets"],
-    bg:"#E1F5EE", border:"#1D9E75", text:"#04342C", active:"#085041"
+    id:"income", label:"Income", tag:"Building block",
+    def:"Wages, benefits, rent received. Income is a stream — it can build wealth, but only if there are structures to catch and hold it.",
+    connects:["wealth","assets"],
+    color:"#1D9E75", glow:"#085041"
   },
   {
-    id:"assets", label:"Assets", tagline:"What you own",
-    detail:"Homes, savings, land, investments. Assets are the building blocks of wealth — and access to them has historically been unequal.",
-    connections:["wealth","income","redlining"],
-    bg:"#E1F5EE", border:"#1D9E75", text:"#04342C", active:"#085041"
+    id:"assets", label:"Assets", tag:"Building block",
+    def:"Homes, savings, land, investments. Assets are the building blocks of wealth — and access to them has historically been unequal.",
+    connects:["wealth","income","redlining"],
+    color:"#1D9E75", glow:"#085041"
   },
   {
-    id:"redlining", label:"Redlining", tagline:"Discriminatory lending maps",
-    detail:"1930s–60s federal policy that denied mortgages in Black neighborhoods. It blocked families from buying homes and building equity — effects that persist today.",
-    connections:["wealth","disinvestment","gentrification","assets"],
-    bg:"#FAECE7", border:"#D85A30", text:"#4A1B0C", active:"#993C1D"
+    id:"redlining", label:"Redlining", tag:"Historical force",
+    def:"1930s–60s federal policy that denied mortgages in Black neighborhoods. It blocked families from buying homes and building equity — effects that persist today.",
+    connects:["wealth","disinvestment","gentrification","assets"],
+    color:"#D85A30", glow:"#712B13"
   },
   {
-    id:"disinvestment", label:"Disinvestment", tagline:"Withdrawal of resources",
-    detail:"When banks, businesses, and institutions pull out of a neighborhood, property values fall, schools deteriorate, and opportunity shrinks.",
-    connections:["wealth","redlining","geography","community"],
-    bg:"#FAECE7", border:"#D85A30", text:"#4A1B0C", active:"#993C1D"
+    id:"disinvestment", label:"Disinvestment", tag:"Historical force",
+    def:"When banks, businesses, and institutions pull out of a neighborhood — property values fall, schools deteriorate, and opportunity shrinks.",
+    connects:["wealth","redlining","geography","community"],
+    color:"#D85A30", glow:"#712B13"
   },
   {
-    id:"gentrification", label:"Gentrification", tagline:"Neighborhood displacement",
-    detail:"Rising investment raises property values and brings new residents — but often displaces long-term, lower-income communities who can no longer afford to stay.",
-    connections:["redlining","geography","community","equity"],
-    bg:"#FAEEDA", border:"#BA7517", text:"#412402", active:"#854F0B"
+    id:"gentrification", label:"Gentrification", tag:"Present-day force",
+    def:"Rising investment raises property values and brings new residents — but often displaces long-term, lower-income communities who can no longer afford to stay.",
+    connects:["redlining","geography","community","equity"],
+    color:"#BA7517", glow:"#633806"
   },
   {
-    id:"geography", label:"Geography", tagline:"Space, place, location",
-    detail:"Where you live shapes your access to schools, jobs, healthcare, and wealth-building. In Philly, zip code is one of the strongest predictors of opportunity.",
-    connections:["wealth","disinvestment","gentrification","community"],
-    bg:"#E6F1FB", border:"#378ADD", text:"#042C53", active:"#185FA5"
+    id:"geography", label:"Geography", tag:"Context",
+    def:"Where you live shapes your access to schools, jobs, healthcare, and wealth-building. In Philly, zip code is one of the strongest predictors of opportunity.",
+    connects:["wealth","disinvestment","gentrification","community"],
+    color:"#378ADD", glow:"#0C447C"
   },
   {
-    id:"community", label:"Community", tagline:"Shared place and belonging",
-    detail:"Communities are shaped by — and can push back against — systems of disinvestment and displacement. Collective action is a path toward equity.",
-    connections:["geography","disinvestment","gentrification","equity"],
-    bg:"#E6F1FB", border:"#378ADD", text:"#042C53", active:"#185FA5"
+    id:"community", label:"Community", tag:"Context",
+    def:"Communities are shaped by — and can push back against — systems of disinvestment and displacement. Collective action is a path toward equity.",
+    connects:["geography","disinvestment","gentrification","equity"],
+    color:"#378ADD", glow:"#0C447C"
   },
   {
-    id:"equity", label:"Equity", tagline:"Fair access to resources",
-    detail:"The goal: everyone has what they need to thrive, regardless of zip code or history. Equity means addressing root causes, not just symptoms.",
-    connections:["wealth","gentrification","community"],
-    bg:"#EAF3DE", border:"#639922", text:"#173404", active:"#3B6D11"
+    id:"equity", label:"Equity", tag:"The goal",
+    def:"The goal: everyone has what they need to thrive, regardless of zip code or history. Equity means addressing root causes, not just symptoms.",
+    connects:["wealth","gentrification","community"],
+    color:"#639922", glow:"#27500A"
   },
 ];
 
-let active = null;
+// Positions as fractions of canvas (cx, cy)
+const POSITIONS = {
+  wealth:       [0.50, 0.46],
+  income:       [0.17, 0.42],
+  assets:       [0.17, 0.68],
+  redlining:    [0.50, 0.12],
+  disinvestment:[0.14, 0.18],
+  gentrification:[0.83, 0.18],
+  geography:    [0.83, 0.46],
+  community:    [0.83, 0.72],
+  equity:       [0.50, 0.82],
+};
 
-function render() {
-  const grid   = document.getElementById("grid");
-  const detail = document.getElementById("detail");
-  const hint   = document.getElementById("hint");
-  const connIds = active ? nodes.find(n => n.id === active).connections : [];
+const canvas = document.getElementById("c");
+const ctx    = canvas.getContext("2d");
+const tip    = document.getElementById("tip");
+const wrap   = document.getElementById("canvas-wrap");
 
-  grid.innerHTML = nodes.map(n => {
+let W, H, hovered = null, selected = null;
+let positions = {}; // pixel positions
+
+function resize() {
+  const rect = wrap.getBoundingClientRect();
+  W = rect.width;
+  H = Math.round(W * 0.72);
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + "px";
+  canvas.style.height = H + "px";
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  // Compute pixel positions
+  NODES.forEach(n => {
+    const [fx, fy] = POSITIONS[n.id];
+    positions[n.id] = { x: fx * W, y: fy * H };
+  });
+  draw();
+}
+
+function nodeRadius(id) {
+  return id === "wealth" ? 46 : 34;
+}
+
+function isConnected(a, b) {
+  const na = NODES.find(n => n.id === a);
+  return na && na.connects.includes(b);
+}
+
+function getActive() { return selected || hovered; }
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  const active = getActive();
+  const activeNode = active ? NODES.find(n => n.id === active) : null;
+  const connectedIds = activeNode ? activeNode.connects : [];
+
+  // Draw edges
+  NODES.forEach(n => {
+    n.connects.forEach(tid => {
+      const a = positions[n.id];
+      const b = positions[tid];
+      if (!a || !b) return;
+      // Only draw each edge once
+      if (n.id > tid) return;
+
+      const isHighlighted = active && (active === n.id || active === tid) &&
+        (connectedIds.includes(n.id) || connectedIds.includes(tid) || active === n.id || active === tid);
+
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+
+      // Gentle curve
+      const mx = (a.x + b.x) / 2 + (b.y - a.y) * 0.08;
+      const my = (a.y + b.y) / 2 - (b.x - a.x) * 0.08;
+      ctx.quadraticCurveTo(mx, my, b.x, b.y);
+
+      if (isHighlighted) {
+        ctx.strokeStyle = activeNode.color;
+        ctx.lineWidth   = 2;
+        ctx.globalAlpha = 0.7;
+      } else if (active) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth   = 1;
+        ctx.globalAlpha = 0.06;
+      } else {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth   = 1;
+        ctx.globalAlpha = 0.12;
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+  });
+
+  // Draw nodes
+  NODES.forEach(n => {
+    const p   = positions[n.id];
+    const r   = nodeRadius(n.id);
     const isActive   = active === n.id;
-    const isConn     = connIds.includes(n.id);
+    const isConn     = active && connectedIds.includes(n.id);
     const isDimmed   = active && !isActive && !isConn;
-    return `<div class="pill${isActive?" active":""}${isDimmed?" dimmed":""}"
-      style="background:${isActive?n.active:n.bg};border-color:${n.border}"
-      onclick="toggle('${n.id}')">
-      <div class="plabel" style="color:${isActive?"#fff":n.text}">${n.label}</div>
-      <div class="ptag"   style="color:${isActive?"rgba(255,255,255,0.8)":n.text}">${n.tagline}</div>
-    </div>`;
-  }).join("");
 
-  if (active) {
-    const n = nodes.find(x => x.id === active);
-    const connTags = n.connections.map(cid => {
-      const cn = nodes.find(x => x.id === cid);
-      return `<span class="conn-tag"
-        style="background:${cn.bg};color:${cn.active};border-color:${cn.border}"
-        onclick="toggle('${cid}')">${cn.label}</span>`;
-    }).join("");
-    detail.innerHTML = `
-      <div class="detail" style="border-color:${n.border};background:${n.bg}">
-        <h2 style="color:${n.active}">${n.label}</h2>
-        <p style="color:${n.text}">${n.detail}</p>
-        <span class="conn-label" style="color:${n.active}">Connected to:</span>
-        <div class="conn-tags">${connTags}</div>
-      </div>`;
-    hint.style.display = "none";
-  } else {
-    detail.innerHTML = "";
-    hint.style.display = "block";
+    ctx.globalAlpha = isDimmed ? 0.2 : 1;
+
+    // Glow for active/connected
+    if (isActive || isConn) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r + 10, 0, Math.PI * 2);
+      const grd = ctx.createRadialGradient(p.x, p.y, r - 4, p.x, p.y, r + 14);
+      grd.addColorStop(0, n.color + "55");
+      grd.addColorStop(1, n.color + "00");
+      ctx.fillStyle = grd;
+      ctx.fill();
+    }
+
+    // Circle fill
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isActive ? n.color : n.glow;
+    ctx.fill();
+
+    // Ring
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = isActive ? "#fff" : n.color;
+    ctx.lineWidth   = isActive ? 2.5 : 1.5;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle   = "#fff";
+    ctx.font        = `${isActive ? 600 : 500} ${n.id === "wealth" ? 14 : 12}px system-ui`;
+    ctx.textAlign   = "center";
+    ctx.textBaseline = "middle";
+
+    // Wrap long labels
+    const words = n.label.split(" ");
+    if (words.length === 1) {
+      ctx.fillText(n.label, p.x, p.y);
+    } else {
+      ctx.fillText(words[0], p.x, p.y - 7);
+      ctx.fillText(words.slice(1).join(" "), p.x, p.y + 7);
+    }
+
+    ctx.globalAlpha = 1;
+  });
+}
+
+function getNodeAt(x, y) {
+  for (const n of NODES) {
+    const p = positions[n.id];
+    const r = nodeRadius(n.id) + 6;
+    if (Math.hypot(x - p.x, y - p.y) < r) return n;
   }
+  return null;
 }
 
-function toggle(id) {
-  active = active === id ? null : id;
-  render();
+function showTip(node, px, py) {
+  tip.innerHTML = `
+    <div class="tag" style="color:${node.color}">${node.tag}</div>
+    <strong>${node.label}</strong>
+    ${node.def}
+  `;
+  tip.style.borderTopColor = node.color;
+
+  // Position tooltip — keep it inside the canvas wrap
+  const wrapRect = wrap.getBoundingClientRect();
+  let left = px + 14;
+  let top  = py - 20;
+  const tw = 250, th = 130;
+  if (left + tw > W) left = px - tw - 14;
+  if (top + th  > H) top  = H - th - 10;
+  if (top < 0)       top  = 10;
+
+  tip.style.left = left + "px";
+  tip.style.top  = top  + "px";
+  tip.classList.add("show");
 }
 
-render();
+function hideTip() {
+  if (!selected) tip.classList.remove("show");
+}
+
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const node = getNodeAt(x, y);
+  hovered = node ? node.id : null;
+  canvas.style.cursor = node ? "pointer" : "default";
+  if (node && !selected) showTip(node, x, y);
+  else if (!node && !selected) hideTip();
+  draw();
+});
+
+canvas.addEventListener("mouseleave", () => {
+  hovered = null;
+  if (!selected) hideTip();
+  draw();
+});
+
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const node = getNodeAt(x, y);
+  if (node) {
+    selected = selected === node.id ? null : node.id;
+    if (selected) showTip(node, x, y);
+    else hideTip();
+  } else {
+    selected = null;
+    hideTip();
+  }
+  draw();
+});
+
+// Touch support
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault();
+  const rect  = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  const node = getNodeAt(x, y);
+  if (node) {
+    selected = selected === node.id ? null : node.id;
+    if (selected) showTip(node, x, y);
+    else hideTip();
+  } else {
+    selected = null;
+    hideTip();
+  }
+  draw();
+}, { passive: false });
+
+window.addEventListener("resize", resize);
+resize();
 </script>
 </body>
 </html>
