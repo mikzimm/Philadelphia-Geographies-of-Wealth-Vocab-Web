@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Geographies of Wealth – Vocab Web</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  .card { background: #fff; border-radius: 16px; padding: 28px 24px 20px; max-width: 700px; width: 100%; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+  .header { background: #3C3489; border-radius: 12px; padding: 22px 28px; margin-bottom: 24px; }
+  .eyebrow { font-size: 11px; letter-spacing: 2px; color: #AFA9EC; text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-size: 24px; font-weight: 500; color: #fff; margin-bottom: 8px; }
+  .subtitle { color: #CECBF6; font-size: 13px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .pill { padding: 10px 16px; border-radius: 20px; cursor: pointer; transition: all 0.15s; border-width: 1.5px; border-style: solid; }
+  .pill .plabel { font-weight: 500; font-size: 14px; }
+  .pill .ptag { font-size: 11px; margin-top: 2px; opacity: 0.7; }
+  .pill.active .ptag { opacity: 0.75; }
+  .pill.dimmed { opacity: 0.3; }
+  .pill.active { transform: scale(1.05); }
+  .detail { border-width: 1.5px; border-style: solid; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; }
+  .detail h2 { font-size: 17px; font-weight: 500; margin-bottom: 8px; }
+  .detail p { font-size: 14px; line-height: 1.7; margin-bottom: 14px; }
+  .detail .conn-label { font-size: 12px; font-weight: 500; }
+  .conn-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .conn-tag { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; cursor: pointer; border-width: 1px; border-style: solid; }
+  .hint { font-size: 13px; color: #888; text-align: center; padding: 12px 0; }
+  .footer { margin-top: 16px; font-size: 11px; color: #aaa; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="header">
+    <div class="eyebrow">SSC Module</div>
+    <h1>Geographies of Wealth</h1>
+    <p class="subtitle">Tap any term to see its definition and connections.</p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div id="detail"></div>
+  <div class="hint" id="hint">Select a term above to explore it</div>
+  <div class="footer">PhillyBOLT · SSC Module · Geographies of Wealth</div>
+
+</div>
+
+<script>
+const nodes = [
+  {
+    id:"wealth", label:"Wealth", tagline:"Assets minus liabilities",
+    detail:"What you own minus what you owe. Unlike income, wealth accumulates over time and can be passed down — or blocked from building at all.",
+    connections:["income","assets","redlining","disinvestment","equity","geography"],
+    bg:"#EEEDFE", border:"#7F77DD", text:"#26215C", active:"#3C3489"
+  },
+  {
+    id:"income", label:"Income", tagline:"Money that flows in",
+    detail:"Wages, benefits, rent received. Income is a stream — it can build wealth, but only if there are structures to catch and hold it.",
+    connections:["wealth","assets"],
+    bg:"#E1F5EE", border:"#1D9E75", text:"#04342C", active:"#085041"
+  },
+  {
+    id:"assets", label:"Assets", tagline:"What you own",
+    detail:"Homes, savings, land, investments. Assets are the building blocks of wealth — and access to them has historically been unequal.",
+    connections:["wealth","income","redlining"],
+    bg:"#E1F5EE", border:"#1D9E75", text:"#04342C", active:"#085041"
+  },
+  {
+    id:"redlining", label:"Redlining", tagline:"Discriminatory lending maps",
+    detail:"1930s–60s federal policy that denied mortgages in Black neighborhoods. It blocked families from buying homes and building equity — effects that persist today.",
+    connections:["wealth","disinvestment","gentrification","assets"],
+    bg:"#FAECE7", border:"#D85A30", text:"#4A1B0C", active:"#993C1D"
+  },
+  {
+    id:"disinvestment", label:"Disinvestment", tagline:"Withdrawal of resources",
+    detail:"When banks, businesses, and institutions pull out of a neighborhood, property values fall, schools deteriorate, and opportunity shrinks.",
+    connections:["wealth","redlining","geography","community"],
+    bg:"#FAECE7", border:"#D85A30", text:"#4A1B0C", active:"#993C1D"
+  },
+  {
+    id:"gentrification", label:"Gentrification", tagline:"Neighborhood displacement",
+    detail:"Rising investment raises property values and brings new residents — but often displaces long-term, lower-income communities who can no longer afford to stay.",
+    connections:["redlining","geography","community","equity"],
+    bg:"#FAEEDA", border:"#BA7517", text:"#412402", active:"#854F0B"
+  },
+  {
+    id:"geography", label:"Geography", tagline:"Space, place, location",
+    detail:"Where you live shapes your access to schools, jobs, healthcare, and wealth-building. In Philly, zip code is one of the strongest predictors of opportunity.",
+    connections:["wealth","disinvestment","gentrification","community"],
+    bg:"#E6F1FB", border:"#378ADD", text:"#042C53", active:"#185FA5"
+  },
+  {
+    id:"community", label:"Community", tagline:"Shared place and belonging",
+    detail:"Communities are shaped by — and can push back against — systems of disinvestment and displacement. Collective action is a path toward equity.",
+    connections:["geography","disinvestment","gentrification","equity"],
+    bg:"#E6F1FB", border:"#378ADD", text:"#042C53", active:"#185FA5"
+  },
+  {
+    id:"equity", label:"Equity", tagline:"Fair access to resources",
+    detail:"The goal: everyone has what they need to thrive, regardless of zip code or history. Equity means addressing root causes, not just symptoms.",
+    connections:["wealth","gentrification","community"],
+    bg:"#EAF3DE", border:"#639922", text:"#173404", active:"#3B6D11"
+  },
+];
+
+let active = null;
+
+function render() {
+  const grid   = document.getElementById("grid");
+  const detail = document.getElementById("detail");
+  const hint   = document.getElementById("hint");
+  const connIds = active ? nodes.find(n => n.id === active).connections : [];
+
+  grid.innerHTML = nodes.map(n => {
+    const isActive   = active === n.id;
+    const isConn     = connIds.includes(n.id);
+    const isDimmed   = active && !isActive && !isConn;
+    return `<div class="pill${isActive?" active":""}${isDimmed?" dimmed":""}"
+      style="background:${isActive?n.active:n.bg};border-color:${n.border}"
+      onclick="toggle('${n.id}')">
+      <div class="plabel" style="color:${isActive?"#fff":n.text}">${n.label}</div>
+      <div class="ptag"   style="color:${isActive?"rgba(255,255,255,0.8)":n.text}">${n.tagline}</div>
+    </div>`;
+  }).join("");
+
+  if (active) {
+    const n = nodes.find(x => x.id === active);
+    const connTags = n.connections.map(cid => {
+      const cn = nodes.find(x => x.id === cid);
+      return `<span class="conn-tag"
+        style="background:${cn.bg};color:${cn.active};border-color:${cn.border}"
+        onclick="toggle('${cid}')">${cn.label}</span>`;
+    }).join("");
+    detail.innerHTML = `
+      <div class="detail" style="border-color:${n.border};background:${n.bg}">
+        <h2 style="color:${n.active}">${n.label}</h2>
+        <p style="color:${n.text}">${n.detail}</p>
+        <span class="conn-label" style="color:${n.active}">Connected to:</span>
+        <div class="conn-tags">${connTags}</div>
+      </div>`;
+    hint.style.display = "none";
+  } else {
+    detail.innerHTML = "";
+    hint.style.display = "block";
+  }
+}
+
+function toggle(id) {
+  active = active === id ? null : id;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
